@@ -25,7 +25,7 @@ __pycache__/*
 
 # Data files
 *pkl
-*/data/*
-*/gen/*
+*data/*
+*gen/*
 
 # End of https://www.gitignore.io/api/jupyternotebooks
