@@ -18,6 +18,8 @@ ipython_config.py
 #spyder project
 *.spyproject/*
 
+Master-thesis.Rproj
+
 __pycache__/*
 
 # Remove previous ipynb_checkpoints
@@ -29,3 +31,4 @@ data/*
 gen/*
 
 # End of https://www.gitignore.io/api/jupyternotebooks
+.Rproj.user
