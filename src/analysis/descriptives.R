@@ -1,7 +1,11 @@
 library(tidyverse)
 library(data.table)
 
-source("code/data-preparation/clean_data.R")
+#source("src/data-preparation/clean_data.R")
+
+load("gen/analysis/input/moves_db_anonym.Rdata")
+
+moves_db <- moves_db_anonym
 
 
 #how many households have moved
