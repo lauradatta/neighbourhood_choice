@@ -48,3 +48,4 @@ nh_db <- nh_db %>%
   filter(HuishoudensTotaal_28 > 50) %>%
   filter(!buurtnaam %in% c("De Lage Kant", "Heeseind", "A2 zone Rosmalen-Zuid")) #take out because of NAs in some variables
 
+

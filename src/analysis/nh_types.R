@@ -1,7 +1,7 @@
 library(tidyverse)
 library(data.table)
 
-source("src/data-preparation/clean_data_2.R")
+source("src/data-preparation/prep_nh_types.R")
 
 
 #choose variables to build nh types
@@ -15,9 +15,9 @@ var_nh_types <- c(#"jaar",
                   #"HuishoudensTotaal_28",
                   "GemiddeldeWoningwaarde_35",
                   "Omgevingsadressendichtheid_106",
-                  #"AfstandTotZiekenhuis_11",
+                  "AfstandTotZiekenhuis_11",
                   "AfstandTotOpritHoofdverkeersweg_89",
-                  #"Restaurants_3km",
+                  "Restaurants_3km",
                   "AfstandTotBelangrijkOverstapstation_91",
                   #"AfstandTotKinderdagverblijf_52",
                   #"AfstandTotBuitenschoolseOpvang_56",
@@ -42,12 +42,12 @@ nh_db_scaled <- nh_db %>%
 ####### PCA ###########
 #######################
   
-pr_out <- prcomp(nh_pca, scale = T)
+pr_out <- prcomp(nh_db_scaled, scale = T)
 
 summary(pr_out)
 
 
-result <- cbind(nh_pca$buurtnaam,data.table(pr_out$x[,1:2]))
+result <- cbind(nh_db$buurtcode,data.table(pr_out$x[,1:2]))
 
 #plot PC1 and PC2
 ggplot(result, aes(x = PC1, y = PC2, label = V1)) +
@@ -57,21 +57,21 @@ ggplot(result, aes(x = PC1, y = PC2, label = V1)) +
 ##### K means clustering #####
 set.seed(1)
 
-kmeans_out <- kmeans(nh_db_scaled, 6, nstart = 40)
+kmeans_out <- kmeans(nh_db_scaled, 5, nstart = 40)
 
 kmeans_out
 
 #results
-cbind(nh_db$buurtnaam, kmeans_out$cluster)
+nh_clusters <- data.table(cbind(nh_db$buurtcode, kmeans_out$cluster))
+nh_clusters <- nh_clusters %>%
+  rename(buurtcode = V1, cluster = V2)
 
+#merge cluster back into moving data
 
-#plot results on map
+moves_db_18_cl <- moves_db_18 %>%
+  left_join(nh_clusters, by = "buurtcode") %>%
+  data.table
+moves_db_18_cl[,cluster := as.factor(cluster)]
+moves_db_18_cl[buurtnaam == "outside", cluster := "outside"]
+moves_db_18_cl[buurtnaam == "neighbour mun", cluster := "neighbour mun"]
 
-#read cbs_buurten 2018 geodata, with geojson package
-cbs_buurten_sp <- geojson_read("input/raw-data/cbs_buurten_2018.geojson", what = "sp")
-#transform into 'sf' data format
-cbs_buurten <- st_as_sf(cbs_buurten_sp)
-#filter for only Den Bosch and buurtcodes
-cbs_buurten_db <- cbs_buurten %>%
-  filter(gemeentenaam == "'s-Hertogenbosch") %>%
-  select(c(id, buurtnaam, buurtcode, geometry))
