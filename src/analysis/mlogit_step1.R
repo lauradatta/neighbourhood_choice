@@ -1,11 +1,12 @@
 library(data.table)
 library(tidyverse)
+library(mlogit)
 
-source("src/data-preparation/clean_data_nh.R")
+ssource("src/data-preparation/clean_data_nh.R")
 
 #for now only take nh of Den Bosch
 moves_db <- moves_db %>%
-  filter(!buurtnaam %in% c( "outside", "neighbour mun"))%>%
+  filter(!buurtnaam %in% c("outside", "neighbour mun"))%>%
   filter(jaar %in% c(2017, 2018))
   data.table
 
@@ -82,15 +83,8 @@ covar_nh <- c(
             #"perc_after2000"
             )
 
-
-
-
 nhchar_subs <- nhchar %>% 
   select(covar_nh)
-
-
-
-
 
 ##### get data in right shape for ML model
 
@@ -116,6 +110,16 @@ for (row in 1: nrow(a)){
 dt[, choice := ifelse(buurtnaam == alternatives, 1, 0)]
 dt[, buurtnaam := NULL]
 dt_alt <- dt %>%
-  left_join(subs, by = c("move_id", "jaar"), suffix = c("_alt", "_choice")) %>%
+  left_join(moves_subs, by = c("move_id", "jaar"), suffix = c("_alt", "_choice")) %>%
   left_join(nhchar_subs, by = c("buurtcode_alt" = "code", "jaar"))
 
+dt_alt %>%
+  select(-c(buurtnaam, buurtcode_choice, vrg_buurtcode))
+
+
+
+#####
+
+test_dt <- mlogit.data(dt_alt, shape = "long", choice = "choice", alt.var = "alternatives")
+# choice ~ alternative specific var | individual specific var
+test <- mlogit(choice ~ prop_nonwest + prop_singles | age + vrginh, test_dt)
