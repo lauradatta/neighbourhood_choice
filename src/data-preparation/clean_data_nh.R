@@ -3,12 +3,17 @@ library(data.table)
 
 source("src/data-preparation/clean_cbs_data.R")
 
+#working on VDI
+load("gen/analysis/input/moves_db.Rdata")
+
+#uncomment working on local machine
 #load("gen/analysis/input/moves_db_anonym.Rdata")
-source("src/data-preparation/fill_anonym.R")
+#source("src/data-preparation/fill_anonym.R")
+#moves_db <- moves_db_anonym %>% data.table
 
 ####### merge move data with neighbourhood data ##########################
 
-moves_db <- moves_db_anonym %>% data.table
+
 moves_db[, jaar := factor(jaar)]
 
 nhchar[, jaar := factor(jaar)]
