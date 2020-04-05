@@ -136,6 +136,7 @@ moves_db[buurtnaam_vrg == "Outside Region", move_type := "into"]
 #take out moves where no information on old or new pkd available
 moves_db <- moves_db[!is.na(move_type)]
 
+save(moves_db, file = paste0(dir,"output/moves_db.Rdata"))
 
 ###### for anonymisation take out the following variables ########
 
