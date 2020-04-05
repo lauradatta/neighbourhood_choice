@@ -2,7 +2,7 @@ library(data.table)
 library(tidyverse)
 library(mlogit)
 
-ssource("src/data-preparation/clean_data_nh.R")
+source("src/data-preparation/clean_data_nh.R")
 
 #for now only take nh of Den Bosch
 moves_db <- moves_db %>%
@@ -94,16 +94,16 @@ alternatives <- moves_subs %>%
   rename(alternatives = buurtnaam)
 
 
-a <- moves_subs[,.(move_id, jaar, buurtnaam)]
+subs <- moves_subs[,.(move_id, jaar, buurtnaam)]
 
 #subset of moves to try approach
-a <- a[move_id %in% seq(33,533,50),]
+subs <- subs[jaar == 2018]
 
 
 dt <- data.table()
 
-for (row in 1: nrow(a)){
-  temp <- data.table(a[row], alternatives)
+for (row in 1: nrow(subs)){
+  temp <- data.table(subs[row], alternatives)
   dt <- rbind(dt, temp)
 }
 
@@ -113,7 +113,7 @@ dt_alt <- dt %>%
   left_join(moves_subs, by = c("move_id", "jaar"), suffix = c("_alt", "_choice")) %>%
   left_join(nhchar_subs, by = c("buurtcode_alt" = "code", "jaar"))
 
-dt_alt %>%
+dt_alt <- dt_alt %>%
   select(-c(buurtnaam, buurtcode_choice, vrg_buurtcode))
 
 
@@ -123,3 +123,4 @@ dt_alt %>%
 test_dt <- mlogit.data(dt_alt, shape = "long", choice = "choice", alt.var = "alternatives")
 # choice ~ alternative specific var | individual specific var
 test <- mlogit(choice ~ prop_nonwest + prop_singles | age + vrginh, test_dt)
+
