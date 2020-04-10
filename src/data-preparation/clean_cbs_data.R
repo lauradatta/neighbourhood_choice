@@ -44,4 +44,9 @@ nhchar <-   nhchar %>%
 nhchar[,code := as.numeric(substr(Codering_3, 3, 10))]
 nhchar[,Codering_3:= NULL]
 
+nhchar <- nhchar %>%
+  rename(buurtcode = code)
+
+
+
 

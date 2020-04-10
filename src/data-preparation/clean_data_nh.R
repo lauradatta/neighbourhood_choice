@@ -4,12 +4,16 @@ library(data.table)
 source("src/data-preparation/clean_cbs_data.R")
 
 #working on VDI
-load("gen/analysis/input/moves_db.Rdata")
+#load("gen/analysis/input/moves_db.Rdata")
 
 #uncomment working on local machine
-#load("gen/analysis/input/moves_db_anonym.Rdata")
-#source("src/data-preparation/fill_anonym.R")
-#moves_db <- moves_db_anonym %>% data.table
+load("gen/analysis/input/moves_db_anonym.Rdata")
+source("src/data-preparation/fill_anonym.R")
+moves_db <- moves_db_anonym %>% data.table
+
+# clean move data
+
+
 
 ####### merge move data with neighbourhood data ##########################
 
@@ -46,6 +50,19 @@ moves_db <- moves_db %>%
 
 moves_db[, move_id := seq_len(.N), by = jaar]
 
+#### select nh characteristics for nh of 's-Hertogenbosch
+
+buurtcodes_db <- moves_db %>%
+  filter(!buurtnaam %in% c("outside", "neighbour mun")) %>%
+  distinct(buurtcode) %>%
+  pull
+
+nhchar_db <- nhchar %>%
+  filter(buurtcode %in% buurtcodes_db)
+
+nhchar_db18 <- nhchar %>%
+  filter(buurtcode %in% buurtcodes_db & jaar == 2018)
+
 # #merge neighbourhood characteristics of previous neighbourhood with moving data (2017 and 2018)
 # moves_db_nh <- moves_db %>%
 #   filter(jaar %in% c("2017",  "2018")) %>%
@@ -65,5 +82,5 @@ moves_db[, move_id := seq_len(.N), by = jaar]
 #   left_join(nhchar, by = c("buurtcode" = "code", "jaar"), suffix = c("_vrg",""))
 
 #### only keep data set
-rm(list=(ls()[!ls() %in% c("moves_db", "nhchar")]))
+rm(list=(ls()[!ls() %in% c("moves_db", "nhchar", "nhchar_db", "nhchar_db18")]))
             

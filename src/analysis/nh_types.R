@@ -1,21 +1,23 @@
 library(tidyverse)
 library(data.table)
 
-source("src/data-preparation/clean_cbs_data.R")
+#source("src/data-preparation/clean_cbs_data.R")
 
 #load("gen/analysis/input/moves_db_anonym.Rdata")
 source("src/data-preparation/clean_data_nh.R")
 
-
-
 ############# NH types #######################
 
+#remove NAs from nhchar_db18
+nhchar_db18_cl <- nhchar_db18 %>%
+  filter(HuishoudensTotaal_28 > 60) %>%
+  filter(!buurtcode %in% c(7961304, 7961303)) #take out Heeseind and De Lage Kant
 
 #choose variables to build nh types
 
 #variable selection for construction neighbourhood types
 
-var_nh_types <- c(#"jaar",
+var_cluster <- c(#"jaar",
   #"buurtnaam",
   #"buurtcode",
   #"AantalInwoners_5",
@@ -33,7 +35,7 @@ var_nh_types <- c(#"jaar",
   #"prop_couples",
   "prop_fam",
   "prop_bijstand",
-  "prop_income_socialmin",
+  #"prop_income_socialmin",
   #"perc_property",
   "perc_rent",
   "perc_after2000"
@@ -41,8 +43,9 @@ var_nh_types <- c(#"jaar",
 
 #select variables
 
-nh_db_scaled <- nh_db %>%
-  select(var_nh_types) %>%
+
+nhchar_scaled <- nhchar_db18_cl %>%
+  select(var_cluster) %>%
   mutate_all(~(scale(.) %>% as.vector))
 
 
@@ -64,39 +67,57 @@ nh_db_scaled <- nh_db %>%
 ##### K means clustering #####
 set.seed(1)
 
-kmeans_out <- kmeans(nh_db_scaled, 5, nstart = 40)
+no_clust <- 10
+
+kmeans_out <- kmeans(nhchar_scaled, no_clust, nstart = 40)
 
 kmeans_out
 
 #results
-nh_clusters <- data.table(cbind(nh_db$buurtcode, kmeans_out$cluster))
+nh_clusters <- data.table(cbind(nhchar_db18_cl$buurtcode, kmeans_out$cluster))
 nh_clusters <- nh_clusters %>%
   rename(buurtcode = V1, cluster = V2)
 
-nh_db_cl <- left_join(nh_db, nh_clusters, by = "buurtcode")
+# clusters for neighbourhoods outside mun Den Bosch
+#identify buurtcodes
+buurtcodes_outside <- moves_db %>%
+  filter(buurtnaam == "outside") %>%
+  distinct(buurtcode) %>%
+  add_column(cluster= no_clust + 2)
 
-nh_db_cl %>%
-  group_by(cluster) %>%
+buurtcodes_neighb <- moves_db %>%
+  filter(buurtnaam == "neighbour mun") %>%
+  distinct(buurtcode) %>%
+  add_column(cluster = no_clust + 1)
+
+nh_clusters <- rbind(nh_clusters, buurtcodes_outside, buurtcodes_neighb)
+
+#join cluster to neighbourhood char
+nhchar_cluster<- left_join(nhchar, nh_clusters, by = "buurtcode") %>%
+  filter(!is.na(cluster))
+
+# mean neighbourhood char by cluster
+nhchar_clus <- nhchar_cluster %>%
+  group_by(cluster, jaar) %>%
   summarize_at(vars(GemiddeldeWoningwaarde_35:perc_after2000),mean)
 
-nh_type_char <- nh_db_cl %>%
-  group_by(cluster) %>%
-  summarize_at(vars(GemiddeldeWoningwaarde_35:perc_after2000),mean)
+#fill Omgevingsadress with 2018 data
+nhchar_clus <- nhchar_clus %>%
+  group_by(cluster)%>%
+  fill(Omgevingsadressendichtheid_106, .direction = "up")
 
-#merge cluster back into moving data
+#merge cluster (2018) back into moving data
 
-moves_db_18_cl <- moves_db_18 %>%
+moves_db <- moves_db %>%
   left_join(nh_clusters, by = "buurtcode") %>%
   #left_join(nh_type_char, by = "cluster", suffix = c("_vrg", "_nh")) %>%
   data.table
-moves_db_18_cl[,cluster := as.factor(cluster)]
-moves_db_18_cl[buurtnaam == "outside", cluster := "outside"]
-moves_db_18_cl[buurtnaam == "neighbour mun", cluster := "neighbour mun"]
-
-moves_18 <- moves_db_18_cl
+moves_db[,cluster := as.factor(cluster)]
+#moves_db[buurtnaam == "outside", cluster := "outside"]
+#moves_db[buurtnaam == "neighbour mun", cluster := "neighbour mun"]
 
 
 #### only keep data set
-rm(list=(ls()[!ls() %in% c("moves_18", "nh_type_char")]))
+rm(list=(ls()[!ls() %in% c("moves_db", "nhchar_clus", "nhchar", "nh_clusters")]))
 
 

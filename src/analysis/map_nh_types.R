@@ -33,9 +33,10 @@ ggplot(nh_clusters_geo) +
 nh_clusters_leaflet <- st_transform(nh_clusters_geo, 4326)
 
 labels <- sprintf("<strong>%s</strong>", nh_clusters_leaflet$buurtnaam) %>% lapply(htmltools::HTML)
-pal <- colorNumeric(
-  palette = "Blues",
-  domain = nh_clusters_leaflet$cluster)
+pal <- colorBin(
+  palette = "Reds",
+  domain = nh_clusters_leaflet$cluster,
+  n = 7)
 
 map <- leaflet(nh_clusters_leaflet) %>%
   addPolygons(
@@ -56,3 +57,5 @@ map <- leaflet(nh_clusters_leaflet) %>%
       style = list("font-weight" = "normal", padding = "3px 8px"),
       textsize = "15px",
       direction = "auto"))
+map
+
