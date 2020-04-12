@@ -1,10 +1,12 @@
-#continue clean moving data
+#clean moving data
 
 #set up
 library(tidyverse)
 library(data.table)
 
-load("../../gen/data-preparation/temp/moves.Rdata")
+load("../../gen/data-preparation/temp/moves_db.Rdata")
+
+### further clean data in terms of moving within, into, out of municipality Den Bosch
 
 #take out cases which didn't happen within Gemeente Den Bosch
 moves_db <- moves %>%
@@ -62,6 +64,15 @@ moves_db[age < 25, age_cat := "<25"]
 moves_db[age >=25 & age <=65, age_cat := "25-65"]
 moves_db[age > 65, age_cat := ">65"]
 
+save(moves_db, file = "../../gen/data-preparation/temp/moves_db.Rdata")
+
+
+} 
+
+load("../../gen/data-preparation/temp/moves_db.Rdata")
+
+####### merge move data with neighbourhood data ##########################
+
 moves_db[, jaar := factor(jaar)]
 
 #Idenitfy neighbourhood municipalities
@@ -90,9 +101,6 @@ moves_db <- moves_db %>%
 #create move id
 moves_db[, move_id := seq_len(.N), by = jaar]
 
-save(moves_db, file = "../../gen/data-preparation/output/moves_db.Rdata")
-
-
-
+save(moves_db, file = )
 
 

@@ -3,22 +3,25 @@
 #set up
 library(data.table)
 library(tidyverse)
+library(Rlab)
 
-anonymize = T # set to FALSE IF not wanting to anonymise
+anonymize = F # set to FALSE IF not wanting to anonymise
 
 #load anonymised data
-load("../../gen/data-preparation/input/moves_db_anonym.Rdata")
+load("../../gen/data-preparation/temp/moves_anonym.Rdata")
 
-moves_db_anonym <- data.table(moves_db_anonym)
+moves_anonym <- data.table(moves_anonym)
 
 if (anonymize==T) {
   
   #fill anonymsed columns with random values
-  moves_db_anonym[, age := sample(seq(18,90),nrow(moves_db_anonym), replace = T)]
-  moves_db_anonym[, AANBEW := sample(seq(1:6),nrow(moves_db_anonym), replace = T)]
-  moves_db_anonym[, etnikort := factor(sample(seq(1:3),nrow(moves_db_anonym), replace = T), labels = c("dutch", "non_west", "west"))]
-  moves_db_anonym[, PRSGES := factor(sample(seq(1:2),nrow(moves_db_anonym), replace = T), labels = c("male", "female"))]
+  moves_anonym[, age := round(rnorm(nrow(moves_anonym),mean = 43.22, sd=18.2),0)]
+  moves_anonym[, AANBEW := sample(seq(1:6),nrow(moves_db_anonym), replace = T)]
+  moves_anonym[, etnikort := factor(sample(seq(1:8),nrow(moves_db_anonym), replace = T), labels = c("Autochtonen", "Westerse allochtonen", 
+                                                                                                    "Overige niet-westerse allochtonen", "Surinamers", 
+                                                                                                    "Turken", "Marokkanen", "Antillianen en Arubanen", "0", "NA"))]
+  moves_anonym[, PRSGES := factor(rbern(nrow(moves_anonym),prob = 0.5), labels = c("male", "female"))]
 }
 
 #save 
-save(moves_db_anonym, file = "../../gen/data-preparation/temp/moves_db.Rdata")
+save(moves_anonym, file = "../../gen/data-preparation/temp/moves.Rdata")
