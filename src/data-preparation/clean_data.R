@@ -136,12 +136,25 @@ moves_db[buurtnaam_vrg == "Outside Region", move_type := "into"]
 #take out moves where no information on old or new pkd available
 moves_db <- moves_db[!is.na(move_type)]
 
+
+# make categories
+
+#categories ethnicity
+moves_db[etnikort == "Autochtonen", ethnicity := "dutch"]
+moves_db[etnikort == "Westerse allochtonen", ethnicity := "western"]
+moves_db[!etnikort %in% c("Autochtonen", "Westerse allochtonen"), ethnicity := "non-western"]
+
+#categories age
+moves_db[age < 25, age_cat := "<25"]
+moves_db[age >=25 & age <=65, age_cat := "25-65"]
+moves_db[age > 65, age_cat := ">65"]
+
 save(moves_db, file = paste0(dir,"output/moves_db.Rdata"))
 
 ###### for anonymisation take out the following variables ########
 
 anonym <- c("HNR", "HLT", "HTV", "HAN", "PKD", "vrgHNR", "vrgHLT", "vrgHTV", "vrgHAN", "vrgpkd", "PRSANR", "PRSGDTYY", "PRSGDTMM", "PRSGDTDD", "PRSGES", 
-            "age", "AANBEW", "cdhhw", "cbsetngr", "etnikort" )
+            "age", "AANBEW", "cdhhw", "cbsetngr", "etnikort", "ethnicity", "age_cat")
 
 replace_to_na <- function(column) {
   column <- NA
