@@ -1,3 +1,6 @@
+#load and clean PKD data
+
+#set up
 library(tidyverse)
 library(data.table)
 library(foreign)
@@ -5,7 +8,8 @@ library(foreign)
 ##### Labels and codes buurten, wijken, gemeente based on postcode ######
 
 #Gemeentes in regio Noord Oost Brabant
-gems <- vhb1418_door %>% distinct(gem) %>% pull
+gems <- c("Haaren" , "Heusden", "'s-Hertogenbosch", "Sint-Michielsgestel", "Vught", "Boxtel", "Oss", "Grave", "Landerd", 
+          "Bernheze", "Uden", "Cuijk", "Boxmeer", "MillenSintHubert", "Meierijstad", "SintAnthonis")
 
 #load codes downloaded from CBS
 pc6_gwb_code <- read_csv2("input/2018-cbs-pc6huisnr20180801_buurt -vs2/pc6hnr20180801_gwb-vs2.csv")
@@ -36,7 +40,6 @@ pc6_gwb <- pc6_gwb_code_db %>%
 
 ## missing postcodes
 #load CBS postcode data for 2015
-
 pkd_mis <- c("5231XJ", "5231XK", "5231EK", "5222AB", "5231WD", "5212XB", "5223XE", "5231VA", "5231XL", 
              "5244JG", "5391LJ", "5216VG", "5222AE", "5223RL", "5223VT", "5223XH", "5223XJ", "5231VB", 
              "5235TX", "5247WE", "5224EE", "5213BL", "5212GC", "5216JH", "5241CS", "5233HE", "5221GB", 
@@ -56,6 +59,5 @@ pkd_2015_mis <- pkd_2015 %>%
 pc6_gwb <- bind_rows(pc6_gwb, pkd_2015_mis) %>% data.table
 
 
-
 #save file for further use
-save(pc6_gwb, file = "gen/data-preparation/input/pc6_gwb.Rdata")
+save(pc6_gwb, file = "../../gen/data-preparation/input/pc6_gwb.Rdata")

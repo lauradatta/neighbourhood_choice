@@ -1,3 +1,5 @@
+#clustering
+
 library(tidyverse)
 library(data.table)
 
@@ -5,6 +7,20 @@ library(data.table)
 
 #load("gen/analysis/input/moves_db_anonym.Rdata")
 source("src/data-preparation/clean_data_nh.R")
+
+#### select nh characteristics for nh of 's-Hertogenbosch
+
+buurtcodes_db <- moves_db %>%
+  filter(!buurtnaam %in% c("outside", "neighbour mun")) %>%
+  distinct(buurtcode) %>%
+  pull
+
+nhchar_db <- nhchar %>%
+  filter(buurtcode %in% buurtcodes_db)
+
+nhchar_db18 <- nhchar %>%
+  filter(buurtcode %in% buurtcodes_db & jaar == 2018)
+
 
 ############# NH types #######################
 

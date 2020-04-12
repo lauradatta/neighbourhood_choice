@@ -1,3 +1,6 @@
+#download data from CBS
+
+#set up
 library(cbsodataR)
 library(tidyverse)
 
@@ -6,17 +9,15 @@ library(tidyverse)
 #fileName <- "data/cbs_buurten_2018.geojson"
 #download.file(geoUrl, fileName)
 
-
+#download neighbour char from CBS
 
 #table of datasets cbs
-toc <- cbs_get_toc()
+#toc <- cbs_get_toc()
 
 #municiaplities needed for thesis
 gems <- "Haaren|Heusden|'s-Hertogenbosch|Sint-Michielsgestel|Vught|Boxtel|Oss|Grave|Landerd|Bernheze|Uden|Cuijk|Boxmeer|MillenSintHubert|Meierijstad|SintAnthonis"
 
-
 #kerncijfers
-
 #2018 data
 kern_cbs_18_db <- cbs_get_data("84286NED") %>%
   filter(str_detect(Gemeentenaam_1, gems)) %>%
@@ -28,7 +29,6 @@ kern_cbs_17_db <- cbs_get_data("83765NED")  %>%
   add_column(jaar = 2017, .before = "WijkenEnBuurten")
 
 kern <- bind_rows(kern_cbs_17_db, kern_cbs_18_db)
-
 
 #voorzieningen
 #2018
@@ -43,5 +43,5 @@ voorzieningen_cbs_17 <- cbs_get_data("84334NED") %>%
 
 voorzieningen <- bind_rows(voorzieningen_cbs_17, voorzieningen_cbs_18)
 
-#save(voorzieningen, kern, file = "gen/data-preparation/input/cbs_data_18.Rdata")
+save(voorzieningen, kern, file = "../../gen/data-preparation/input/cbs_data.Rdata")
 
