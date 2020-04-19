@@ -1,16 +1,32 @@
-# TEMPLATE FOR A "RULE"
+#########################################
+###### makefile data-preparation ########
+#########################################
 
-#[which files are made by this rule?]: [which files do I need to make them - can be more than one]
-#	welchen command muss ich ausfuehren um es zu runnen
+prep: prep_nhchar prep_moves
 
-### neighbourhood data ###
-../../gen/data-preparation/temp/cbs_data.Rdata
+####### neighbourhood data ########
+
+prep_nhchar: ../../gen/data-preparation/output/nhchar.Rdata
+
+#Step 1: download CBS data
+../../gen/data-preparation/input/cbs_data.Rdata: download_cbs_data.R
+	R --vanilla --args "" < "download_cbs_data.R"
+
+#Step 2: clean CBS data
+../../gen/data-preparation/output/nhchar.Rdata: ../../gen/data-preparation/input/cbs_data.Rdata clean_cbs_data.R
+	R --vanilla --args "" < "clean_cbs_data.R"
 
 
+######## moving data #########
 
-### moving data ####
 #fill anonymous data with random values
-all: ../../gen/data-preparation/temp/moves_db_anonym_filled.RData
+prep_moves: ../../gen/data-preparation/output/moves_db.RData
+
+
+#Step 1: fill anonymised data with fake data
+../../gen/data-preparation/temp/moves.RData: fill_moves_anonym.R
+	R --vanilla --args "" < "fill_moves_anonym.R"
 	
-../../gen/data-preparation/temp/moves_db_anonym_filled.RData: fill_anonym.R
-	R --vanilla --args "" < "fill_anonym.R"
+#Step 2: clean moving data
+../../gen/data-preparation/output/moves_db.RData: fill_moves_anonym.R clean_moves_loc.R 
+	R --vanilla --args "" < "clean_moves_loc.R"

@@ -13,11 +13,11 @@ var_voorz <- c("jaar", "Codering_3", "AfstandTotZiekenhuis_11" , "AfstandTotOpri
 
 facilities <- voorzieningen %>%
   select(var_voorz)%>%
-  rename(Restaurants_3km = Binnen3Km_46)
+  rename(Restaurants.3km = Binnen3Km_46)
 
 #kerncijfers
-var_kern <- c("jaar", "Codering_3", "AantalInwoners_5", "NietWestersTotaal_18","HuishoudensTotaal_28" , "Eenpersoonshuishoudens_29", "HuishoudensZonderKinderen_30", "HuishoudensMetKinderen_31",  
-              "GemiddeldeWoningwaarde_35", "Koopwoningen_40", "HuurwoningenTotaal_41", "BouwjaarVanaf2000_46", "PersonenPerSoortUitkeringBijstand_74", "HuishOnderOfRondSociaalMinimum_73",
+var_kern <- c("jaar", "Codering_3", "AantalInwoners_5", "WestersTotaal_17", "NietWestersTotaal_18",  "HuishoudensTotaal_28" , "Eenpersoonshuishoudens_29", "HuishoudensZonderKinderen_30", "HuishoudensMetKinderen_31",  
+              "GemiddeldeWoningwaarde_35", "Koopwoningen_40", "InBezitOverigeVerhuurders_43", "BouwjaarVanaf2000_46", "PersonenPerSoortUitkeringBijstand_74", "HuishOnderOfRondSociaalMinimum_73",
               "Omgevingsadressendichtheid_106")
 
 indicators <- kern %>%
@@ -27,30 +27,39 @@ indicators <- kern %>%
 nhchar <- left_join(indicators, facilities, by = c("Codering_3", "jaar")) %>%
   data.table
 
+setnames(nhchar, names(nhchar), sub("_.*","",names(nhchar)))
+
+
+
 ## add propotions
-nhchar[,`:=` (prop_nonwest = round(NietWestersTotaal_18/AantalInwoners_5,2), 
-            prop_singles = round(Eenpersoonshuishoudens_29/HuishoudensTotaal_28,2), 
-            prop_couples = round(HuishoudensZonderKinderen_30/HuishoudensTotaal_28,2),
-            prop_fam = round(HuishoudensMetKinderen_31/HuishoudensTotaal_28,2),
-            prop_bijstand = round(PersonenPerSoortUitkeringBijstand_74 / AantalInwoners_5,2),
-            prop_income_socialmin = HuishOnderOfRondSociaalMinimum_73/100,
-            perc_property = Koopwoningen_40/100,
-            perc_rent = HuurwoningenTotaal_41/100,
-            perc_after2000 = BouwjaarVanaf2000_46/100)]
+nhchar[,`:=` (prop.nonwest = round(NietWestersTotaal/AantalInwoners,2),
+            prop.west = round(WestersTotaal/AantalInwoners,2),
+            prop.singles = round(Eenpersoonshuishoudens/HuishoudensTotaal,2), 
+            prop.couples = round(HuishoudensZonderKinderen/HuishoudensTotaal,2),
+            prop.fam = round(HuishoudensMetKinderen/HuishoudensTotaal,2),
+            prop.bijstand = round(PersonenPerSoortUitkeringBijstand/ AantalInwoners,2),
+            prop.income.socialmin = HuishOnderOfRondSociaalMinimum/100,
+            perc.property = Koopwoningen/100,
+            perc.rent = InBezitOverigeVerhuurders/100, #private rental
+            perc.after2000 = BouwjaarVanaf2000/100)]
+
+nhchar[, prop.dutch := 1 - (prop.nonwest + prop.west)]
 
 #remove variables not needed
 nhchar <-   nhchar %>% 
-  select(-c(NietWestersTotaal_18, Eenpersoonshuishoudens_29, HuishoudensZonderKinderen_30, HuishoudensMetKinderen_31, PersonenPerSoortUitkeringBijstand_74, Koopwoningen_40,
-            HuurwoningenTotaal_41, BouwjaarVanaf2000_46, PersonenPerSoortUitkeringBijstand_74, HuishOnderOfRondSociaalMinimum_73)) %>%
+  select(-c(NietWestersTotaal, WestersTotaal, Eenpersoonshuishoudens, HuishoudensZonderKinderen, HuishoudensMetKinderen, PersonenPerSoortUitkeringBijstand, Koopwoningen,
+            InBezitOverigeVerhuurders, BouwjaarVanaf2000, PersonenPerSoortUitkeringBijstand, HuishOnderOfRondSociaalMinimum)) %>%
   data.table
 
 #prepare code variable for merging
-nhchar[,code := as.numeric(substr(Codering_3, 3, 10))]
-nhchar[,Codering_3:= NULL]
+nhchar[,code := as.numeric(substr(Codering, 3, 10))]
+nhchar[,Codering:= NULL]
 
 nhchar <- nhchar %>%
   rename(buurtcode = code)
 
-save(nhchar, file = "../../gen/data-preparation/temp/nhchar.Rdata")
+nhchar[,jaar := factor(jaar)]
+
+save(nhchar, file = "../../gen/data-preparation/output/nhchar.Rdata")
 
 

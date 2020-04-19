@@ -62,7 +62,14 @@ moves_db[age < 25, age_cat := "<25"]
 moves_db[age >=25 & age <=65, age_cat := "25-65"]
 moves_db[age > 65, age_cat := ">65"]
 
+#categories household type
+moves_db[cdhhw == "Tweepersoonshuishouden", hh_type := "couple"]
+moves_db[cdhhw == "Gezin met kinderen" | cdhhw == "Eénoudergezin", hh_type := "fam with children"]
+moves_db[!hh_type %in% c("couple", "fam with children"), hh_type := "single or other"]
+
+#cleaning variables
 moves_db[, jaar := factor(jaar)]
+moves_db[, vrginh := as.numeric(vrginh)]
 
 #Idenitfy neighbourhood municipalities
 

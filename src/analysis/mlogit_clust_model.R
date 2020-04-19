@@ -1,113 +1,23 @@
+#Mlogit models
+
+#set up
 library(data.table)
 library(tidyverse)
 library(mlogit)
 
-source("src/data-preparation/mlogit_clust_prep.R")
+load("../../gen/analysis/temp/dt_mlogit.Rdata")
+load("../../gen/analysis/temp/variables.Rdata")
 
-save(dt_mlogit, file = "gen/analysis/temp/dt_mlogit.Rdata")
+###### build models ########
 
-load("gen/analysis/temp/dt_mlogit.Rdata")
-
-covar_nh <- c(
-              #"cluster",
-              #"buurtcode",
-              #"jaar",
-              "GemiddeldeWoningwaarde_35", 
-              #"Omgevingsadressendichtheid_106", 
-              #"AfstandTotZiekenhuis_11", 
-              "AfstandTotOpritHoofdverkeersweg_89", 
-              "Restaurants_3km", 
-              "AfstandTotBelangrijkOverstapstation_91", 
-              #"AfstandTotKinderdagverblijf_52",
-              #"AfstandTotBuitenschoolseOpvang_56", 
-              "prop_nonwest", 
-              "prop_singles", 
-              "prop_couples", 
-              #"prop_fam", 
-              "prop_bijstand",
-              #"prop_income_socialmin", 
-              #"perc_property", 
-              "perc_rent", 
-              "perc_after2000"
-            )
-
-covar_indiv <- c(#"move_id",
-                  #"jaar",
-                  #"cluster",
-                  #"buurtnaam",
-                  #"buurtcode",
-                  #"vrg_buurtcode",
-                  #"PRSGES", 
-                  #"age",
-                  "age_cat",
-                  #"AANBEW", 
-                  "cdhhw", 
-                  #"cbsetngr",
-                  #"hsh_cat",
-                  #"etnikort",
-                  "ethnicity",
-                  "vrgwrd"
-                  #"vrghr", 
-                  #"vrgpct", 
-                  #"vrgopp", 
-                  #"vrgkam", 
-                  #"vrginh" 
-                  #"vrghrkp", 
-                  #"vrgeigd", 
-                  #"vrgbjr", 
-                  #"vrgbwwyz", 
-                  #"vrgwtyp", 
-                  #"vrgvlopp", 
-                  )
-
-covar_nh_vrg <- c(
-                #"cluster",
-                #"buurtcode",
-                #"jaar",
-                "GemiddeldeWoningwaarde_35_vrg", 
-                "Omgevingsadressendichtheid_106_vrg", 
-                "AfstandTotZiekenhuis_11_vrg", 
-                #"AfstandTotOpritHoofdverkeersweg_89", 
-                #"Restaurants_3km", 
-                #"AfstandTotBelangrijkOverstapstation_91", 
-                #"AfstandTotKinderdagverblijf_52",
-                #"AfstandTotBuitenschoolseOpvang_56", 
-                "prop_nonwest_vrg", 
-                "prop_singles_vrg", 
-                #"prop_couples", 
-                #"prop_fam", 
-                "prop_bijstand_vrg"
-                #"prop_income_socialmin", 
-                #"perc_property", 
-                #"perc_rent", 
-                #"perc_after2000"
-              )
-
-
-#specify covariates
-
-#alternative specific variables
-
+#define alternative and individual specific variables
 alt_specific <- covar_nh
+indiv_specifc <- c(covar_indiv, covar_nh_vrg)
 
 
-indiv_specifc <- covar_indiv
+#### Model: interactions between individual and alternative specific covariates
 
-#define formulats
-#alternatives only
-f_alt <- as.formula(paste("choice", 
-                          paste(c(alt_specific, -1), collapse = " + "), 
-                          sep = " ~ "))
-
-
-# add individual specific variables
-f_altind <- as.formula(paste("choice",
-                             paste(
-                               paste(alt_specific, collapse = " + "),
-                               paste(c(indiv_specifc, -1), collapse = " + "),
-                               sep = " | "),
-                             sep = " ~ "))
-
+#build interactions
 int <- c()
 
 # add interactions
@@ -117,18 +27,51 @@ for (i in 1:length(alt_specific)){
   }
 }
 
-f_int <- as.formula(paste("choice",
+#formula
+f_interact <- as.formula(paste("choice",
                           paste(c(int, - 1), collapse = " + "),
                           sep = " ~ "))
 
-#run models
-m1 <- mlogit(f_alt, dt_mlogit)
-summary(m1)
+
+head(model.matrix(mFormula(f_interact), dt_mlogit), n = 15)
+
+#model
+m_interact <- mlogit(f_interact, dt_mlogit)
+
+#results
+summary(m_interact)
+
+save(m_interact, file = "../../gen/analysis/output/model_results.Rdata")
 
 
-m2 <- mlogit(f_altind, dt_mlogit)
-summary(m2)
+#### Model 1: alternatives only
 
-m3 <- mlogit(f_int, dt_mlogit)
+# # formula
+# f_alt <- as.formula(paste("choice", 
+#                           paste(c(alt_specific, -1), collapse = " + "), 
+#                           sep = " ~ "))
+# 
+# #model
+# m1 <- mlogit(f_alt, dt_mlogit)
+# 
+# #results
+# summary(m1)
 
-summary(m3)
+
+#### Model 2: add individual specific variables --> this model is not identified
+
+#formula
+#f_altind <- as.formula(paste("choice",
+#                             paste(
+#                               paste(alt_specific, collapse = " + "),
+#                               paste(c(indiv_specifc, -1), collapse = " + "),
+#                               sep = " | "),
+#                             sep = " ~ "))
+
+
+#model
+#m2 <- mlogit(f_altind, dt_mlogit)
+
+
+#results
+#summary(m2)

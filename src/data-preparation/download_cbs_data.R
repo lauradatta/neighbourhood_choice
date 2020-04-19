@@ -6,7 +6,7 @@ library(tidyverse)
 
 #download cbs_buurten 2018 geo data (geojson format)
 #geoUrl <- "https://geodata.nationaalgeoregister.nl/wijkenbuurten2018/wfs?request=GetFeature&service=WFS&version=1.1.0&typeName=wijkenbuurten2018:cbs_buurten_2018&outputFormat=json"
-#fileName <- "data/cbs_buurten_2018.geojson"
+#fileName <- "../../data/cbs_buurten_2018.geojson"
 #download.file(geoUrl, fileName)
 
 #download neighbour char from CBS
