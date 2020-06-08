@@ -1,21 +1,38 @@
-#Mlogit models
+# Estimate conditional logit model using standardised data
 
-#set up
+
+
+###### set up
+#set working directory to source file location
+
+#load packages
 library(data.table)
 library(tidyverse)
 library(mlogit)
 
+#load data prepared for mlogit
 load("../../gen/analysis/temp/dt_mlogit.Rdata")
-load("../../gen/analysis/temp/variables.Rdata")
+
+#script with variables to be included in conditional logit model
+source("../../src/analysis/variable_selection.R")
+
+#use standardised data
+dt_mlogit <- dt_mlogit_stand
+#####################
 
 ###### build models ########
 
+###### Model 1: Baseline model
+
+m_interact_basic <- mlogit(choice ~ income.nh:income_hh + prop.nonwest:ethnicity_non_western + prop.nonwest:ethnicity_western + prop.west:ethnicity_non_western + 
+                            prop.west:ethnicity_western + prop.singles:hh_type_single + prop.singles:hh_type_fam + prop.fam:hh_type_single + 
+                            prop.fam:hh_type_fam - 1, dt_mlogit)
+
+######## Model 2: Full model
+
 #define alternative and individual specific variables
 alt_specific <- covar_nh
-indiv_specifc <- c(covar_indiv, covar_nh_vrg)
-
-
-#### Model: interactions between individual and alternative specific covariates
+indiv_specifc <- covar_indiv
 
 #build interactions
 int <- c()
@@ -29,49 +46,18 @@ for (i in 1:length(alt_specific)){
 
 #formula
 f_interact <- as.formula(paste("choice",
-                          paste(c(int, - 1), collapse = " + "),
-                          sep = " ~ "))
+                               paste(c(int, -1), collapse = " + "),
+                               sep = " ~ "))
 
-
-head(model.matrix(mFormula(f_interact), dt_mlogit), n = 15)
 
 #model
 m_interact <- mlogit(f_interact, dt_mlogit)
 
-#results
-summary(m_interact)
+#summary(m_interact)
 
-save(m_interact, file = "../../gen/analysis/output/model_results.Rdata")
-
-
-#### Model 1: alternatives only
-
-# # formula
-# f_alt <- as.formula(paste("choice", 
-#                           paste(c(alt_specific, -1), collapse = " + "), 
-#                           sep = " ~ "))
-# 
-# #model
-# m1 <- mlogit(f_alt, dt_mlogit)
-# 
-# #results
-# summary(m1)
+###### NULL model to calculate pseudo R2
+m_null <- mlogit(choice ~ income.nh:income_hh - 1, dt_mlogit)
 
 
-#### Model 2: add individual specific variables --> this model is not identified
-
-#formula
-#f_altind <- as.formula(paste("choice",
-#                             paste(
-#                               paste(alt_specific, collapse = " + "),
-#                               paste(c(indiv_specifc, -1), collapse = " + "),
-#                               sep = " | "),
-#                             sep = " ~ "))
-
-
-#model
-#m2 <- mlogit(f_altind, dt_mlogit)
-
-
-#results
-#summary(m2)
+#make sure to copy this file to "../../gen/paper/input/"
+save(m_interact_basic, m_interact, m_null, file = "../../gen/analysis/output/model_results_stand.Rdata")
