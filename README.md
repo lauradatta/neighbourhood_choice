@@ -1,10 +1,44 @@
-## Understanding relocation choices at the neighbourhood level
+# Neighbourhood Choices
 
-### Abstract
-Against the backdrop of housing shortages and rising housing prices, local governments need to understand how policies geared at growing the housing supply may affect consumer demand for new housing. Accordingly, this study proposes to analyse residential location choice at the neighbourhood level using detailed moving data for five years (2014 - 2018) for more than 15,000 households from the municipality of 's-Hertogenbosch. Based on a rich set of characteristics at the neighbourhood and household level, we first apply k-means clustering to identify neighbourhood types. Then, we estimate a conditional logit model which allows us to specify neighbourhood choice as a function of neighbourhood and household characteristics. In line with the results of previous studies, we find income to be an essential driver of neighbourhood choice. However, the role of ethnicity and household composition seems limited. Using our model results, we simulate the effects of several policy-relevant scenarios on the housing demand of households. We illustrate that, as the socio-economic situation of households deteriorates, the most vulnerable neighbourhoods risk further segregation in terms of income. We also show how potential policy measures may counteract this effect.
+> Datta, Laura, 2020, "Understanding Housing Relocation at the Neighbourhood-level", Tilburg University Thesis.
 
-### Workflow
-The project consist of three stages: data-preparation, analysis and paper. Each stage contains a makefile which describes the workflow within each of the stages which needs to be followed. 
 
-### Data
-Due to confidentiality agreements with the data provider, we cannot share the data publicly. 
+## Dependencies
+
+Please follow the installation guide on http://tilburgsciencehub.com/.
+
+- R. [Installation Guide](http://tilburgsciencehub.com/setup/r/).
+
+
+## How to run it
+
+Open your command line tool:
+
+- Check whether your present working directory is  `neighbourhood_choice` by typing `pwd` in terminal
+
+  - if not, type `cd yourpath/neighbourhood_choice` to change your directory to `neighbourhood_choice`
+
+- Each stage contains a makefile which executes the scripts in the right order. Type `make RULE` in the command line.
+
+## Directory Structure
+
+```txt
+├── data
+├── gen
+│   ├── analysis
+│   │   ├── input
+│   │   ├── output
+│   │   └── temp
+│   ├── data-preparation
+│   │   ├── input
+│   │   ├── output
+│   │   └── temp
+│   └── paper
+│       ├── input
+│       ├── output
+│       └── temp
+└── src
+    ├── analysis
+    ├── data-preparation
+    └── paper
+```
