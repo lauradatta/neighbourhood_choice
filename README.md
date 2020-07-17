@@ -6,4 +6,5 @@ Against the backdrop of housing shortages and rising housing prices, local gover
 ### Workflow
 The project consist of three stages: data-preparation, analysis and paper. Each stage contains a makefile which describes the workflow within each of the stages which needs to be followed. 
 
+### Data
 Due to confidentiality agreements with the data provider, we cannot share the data publicly. 
